@@ -1,17 +1,73 @@
-// src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
-import { Navbar, Nav, Container } from "react-bootstrap";
+import { Navbar, Nav, Container, Button } from "react-bootstrap";
 import StockTabs from "./components/StockTabs";
 import SelectedStocksPage from "./components/SelectedStocksPage";
+import Login from "./components/Login";
+import ProtectedRoute from "./components/ProtectedRoute";
 import gainers from "./data/gainers";
 import losers from "./data/losers";
 import { SelectedStocksProvider } from "./context/SelectedStocksContext";
+import { AuthProvider, useAuth } from "./context/AuthContext";
 import "./App.css";
+import { useEffect, useState } from "react";
 
 function App() {
   return (
-    <SelectedStocksProvider>
-      <Router>
+    <Router>
+      <AuthProvider>
+        <SelectedStocksProvider>
+          <AppContent />
+        </SelectedStocksProvider>
+      </AuthProvider>
+    </Router>
+  );
+}
+
+const AppContent = () => {
+  const { accessToken, logout } = useAuth();
+  const [gainers, setGainers] = useState([]);
+  const [losers, setLosers] = useState([]);
+  useEffect(() => {
+    loadData();
+    const wsUrl = "ws://localhost:3000";
+    console.log(`Attempting to connect to WebSocket at ${wsUrl}`);
+    const websocket = new WebSocket(wsUrl);
+
+    websocket.onopen = () => {
+      console.log("Connected to WebSocket server");
+    };
+
+    websocket.onmessage = (event) => {
+      const data = JSON.parse(event.data);
+      console.log("Received message:", data);
+
+      setGainers(data.gainers);
+      setLosers(data.losers);
+    };
+
+    websocket.onclose = () => {
+      console.log("WebSocket disconnected");
+    };
+
+    websocket.onerror = (error) => {
+      console.error("WebSocket errors:", error);
+    };
+  }, []);
+
+  const loadData = async () => {
+    try {
+      const response = await fetch("http://localhost:3000/api/data");
+      const data = await response.json();
+      setGainers(data.gainers);
+      setLosers(data.losers);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+
+  return (
+    <>
+      {accessToken && (
         <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
           <Container>
             <Navbar.Brand href="/">Stock Dashboard</Navbar.Brand>
@@ -21,21 +77,40 @@ function App() {
                 <Nav.Link href="/">Dashboard</Nav.Link>
                 <Nav.Link href="/selected">Selected</Nav.Link>
               </Nav>
+              <Button
+                variant="outline-light"
+                onClick={logout}
+                className="ms-auto"
+              >
+                Logout
+              </Button>
             </Navbar.Collapse>
           </Container>
         </Navbar>
-        <Container>
-          <Routes>
-            <Route
-              path="/"
-              element={<StockTabs gainers={gainers} losers={losers} />}
-            />
-            <Route path="/selected" element={<SelectedStocksPage />} />
-          </Routes>
-        </Container>
-      </Router>
-    </SelectedStocksProvider>
+      )}
+      <Container>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+          <Route
+            path="/"
+            element={
+              <ProtectedRoute>
+                <StockTabs gainers={gainers} losers={losers} />
+              </ProtectedRoute>
+            }
+          />
+          <Route
+            path="/selected"
+            element={
+              <ProtectedRoute>
+                <SelectedStocksPage />
+              </ProtectedRoute>
+            }
+          />
+        </Routes>
+      </Container>
+    </>
   );
-}
+};
 
 export default App;
