@@ -9,6 +9,7 @@ import { SelectedStocksProvider } from "./context/SelectedStocksContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import "./App.css";
 import { useEffect, useState } from "react";
+import { getApiUrl, getWebSocketUrl, getAuthUrl } from "./utils/utils"; // Importing for side effects, if needed
 
 function App() {
   return (
@@ -26,7 +27,7 @@ const AppContent = () => {
   const [losers, setLosers] = useState([]);
   useEffect(() => {
     loadData();
-    const wsUrl = "ws://localhost:3000";
+    const wsUrl = getWebSocketUrl();
     console.log(`Attempting to connect to WebSocket at ${wsUrl}`);
     const websocket = new WebSocket(wsUrl);
 
@@ -67,7 +68,7 @@ const AppContent = () => {
       },
       body: JSON.stringify(data),
     };
-    fetch("http://localhost:3000/api/getPastData", options)
+    fetch(getApiUrl("getPastData"), options)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
@@ -85,7 +86,7 @@ const AppContent = () => {
 
   const loadData = async () => {
     try {
-      const response = await fetch("http://localhost:3000/api/data");
+      const response = await fetch(getApiUrl("data"));
       const data = await response.json();
       setGainers(data.gainers);
       setLosers(data.losers);

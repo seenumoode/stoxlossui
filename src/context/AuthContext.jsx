@@ -1,5 +1,6 @@
 import { createContext, useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { getAuthUrl } from "../utils/utils"; // Importing for side effects, if needed
 
 const AuthContext = createContext();
 
@@ -22,7 +23,7 @@ export const AuthProvider = ({ children }) => {
       body: JSON.stringify(data),
     };
 
-    fetch("http://localhost:3000/api/auth", options)
+    fetch(getAuthUrl(), options)
       .then((response) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
