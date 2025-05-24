@@ -1,4 +1,3 @@
-// src/components/StockTabs.jsx
 import { useState } from "react";
 import { Tabs, Tab, Row, Col, Form, InputGroup, Button } from "react-bootstrap";
 import { FaSearch } from "react-icons/fa";
@@ -6,8 +5,9 @@ import StockCard from "./StockCard";
 import StockTable from "./StockTable";
 import StockViewToggle from "./StockViewToggle";
 import { useSelectedStocks } from "../context/SelectedStocksContext";
+import { DatePicker } from "antd";
+import dayjs from "dayjs";
 
-// Calculate continuous positive or negative changes
 const calculateContinuousChanges = (data, type) => {
   if (!data || !Array.isArray(data)) return 0;
   let count = 0;
@@ -17,17 +17,25 @@ const calculateContinuousChanges = (data, type) => {
     } else if (type === "negative" && entry.percentageChange < 0) {
       count++;
     } else {
-      break; // Stop at the first non-matching change
+      break;
     }
   }
   return count;
 };
 
-const StockTabs = ({ gainers, losers }) => {
+const StockTabs = ({ gainers, losers, onDateChange }) => {
   const [view, setView] = useState("card");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("default");
   const { selectedStocks, saveSelectedStocks } = useSelectedStocks();
+  const todayDate = new Date();
+  const formattedDate = todayDate
+    .toLocaleDateString("en-GB", {
+      day: "2-digit",
+      month: "short",
+      year: "2-digit",
+    })
+    .replace(/ /g, "-");
 
   const validateStocks = (stocks) => {
     return stocks.filter(
@@ -51,6 +59,39 @@ const StockTabs = ({ gainers, losers }) => {
 
   const sortStocks = (stocks, tab) => {
     if (sortOption === "default") return [...stocks];
+
+    if (sortOption === "selected") {
+      // Separate selected and unselected stocks
+      const selected = [];
+      const unselected = [];
+      stocks.forEach((stock) => {
+        if (
+          selectedStocks.some((s) => s.instrumentKey === stock.instrumentKey)
+        ) {
+          selected.push(stock);
+        } else {
+          unselected.push(stock);
+        }
+      });
+
+      // Sort unselected stocks by continuous change (descending)
+      const sortedUnselected = unselected.sort((a, b) => {
+        const aCount =
+          tab === "gainers"
+            ? calculateContinuousChanges(a.data, "positive")
+            : calculateContinuousChanges(a.data, "negative");
+        const bCount =
+          tab === "gainers"
+            ? calculateContinuousChanges(b.data, "positive")
+            : calculateContinuousChanges(b.data, "negative");
+        return bCount - aCount;
+      });
+
+      // Combine: selected stocks first, then sorted unselected stocks
+      return [...selected, ...sortedUnselected];
+    }
+
+    // Existing "Continuous Change" sorting
     return [...stocks].sort((a, b) => {
       const aCount =
         tab === "gainers"
@@ -70,7 +111,7 @@ const StockTabs = ({ gainers, losers }) => {
   return (
     <div>
       <Row className="mb-3 align-items-center">
-        <Col xs={12} md={6}>
+        <Col xs={12} md={4}>
           <Form className="search-input">
             <InputGroup>
               <InputGroup.Text>
@@ -86,7 +127,14 @@ const StockTabs = ({ gainers, losers }) => {
             </InputGroup>
           </Form>
         </Col>
-        <Col xs={12} md={6}>
+        <Col xs={12} md={4}>
+          <DatePicker
+            defaultValue={dayjs(formattedDate, "DD-MMM-YY")}
+            onChange={onDateChange}
+            format={"DD-MMM-YY"}
+          />
+        </Col>
+        <Col xs={12} md={4}>
           {view === "card" && (
             <Form.Group className="sort-group" controlId="sortSelect">
               <Form.Label className="me-2 fw-semibold">Sort By:</Form.Label>
@@ -98,6 +146,7 @@ const StockTabs = ({ gainers, losers }) => {
               >
                 <option value="default">Default</option>
                 <option value="continuous">Continuous Change</option>
+                <option value="selected">Selected</option>
               </Form.Select>
             </Form.Group>
           )}

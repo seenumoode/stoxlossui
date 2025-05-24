@@ -4,8 +4,7 @@ import StockTabs from "./components/StockTabs";
 import SelectedStocksPage from "./components/SelectedStocksPage";
 import Login from "./components/Login";
 import ProtectedRoute from "./components/ProtectedRoute";
-import gainers from "./data/gainers";
-import losers from "./data/losers";
+
 import { SelectedStocksProvider } from "./context/SelectedStocksContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
 import "./App.css";
@@ -15,9 +14,7 @@ function App() {
   return (
     <Router>
       <AuthProvider>
-        <SelectedStocksProvider>
-          <AppContent />
-        </SelectedStocksProvider>
+        <AppContent />
       </AuthProvider>
     </Router>
   );
@@ -52,7 +49,39 @@ const AppContent = () => {
     websocket.onerror = (error) => {
       console.error("WebSocket errors:", error);
     };
+    return () => {
+      websocket.close();
+    };
   }, []);
+
+  const onDateChange = (date, dateString) => {
+    console.log("Selected date:", dateString);
+    const data = {
+      date,
+    };
+
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    };
+    fetch("http://localhost:3000/api/getPastData", options)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setGainers(data.gainers);
+        setLosers(data.losers);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
 
   const loadData = async () => {
     try {
@@ -66,50 +95,56 @@ const AppContent = () => {
   };
 
   return (
-    <>
-      {accessToken && (
-        <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
-          <Container>
-            <Navbar.Brand href="/">Stock Dashboard</Navbar.Brand>
-            <Navbar.Toggle aria-controls="basic-navbar-nav" />
-            <Navbar.Collapse id="basic-navbar-nav">
-              <Nav className="me-auto">
-                <Nav.Link href="/">Dashboard</Nav.Link>
-                <Nav.Link href="/selected">Selected</Nav.Link>
-              </Nav>
-              <Button
-                variant="outline-light"
-                onClick={logout}
-                className="ms-auto"
-              >
-                Logout
-              </Button>
-            </Navbar.Collapse>
-          </Container>
-        </Navbar>
-      )}
-      <Container>
-        <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route
-            path="/"
-            element={
-              <ProtectedRoute>
-                <StockTabs gainers={gainers} losers={losers} />
-              </ProtectedRoute>
-            }
-          />
-          <Route
-            path="/selected"
-            element={
-              <ProtectedRoute>
-                <SelectedStocksPage />
-              </ProtectedRoute>
-            }
-          />
-        </Routes>
-      </Container>
-    </>
+    <SelectedStocksProvider losers={losers}>
+      <>
+        {accessToken && (
+          <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
+            <Container>
+              <Navbar.Brand href="/">Stock Dashboard</Navbar.Brand>
+              <Navbar.Toggle aria-controls="basic-navbar-nav" />
+              <Navbar.Collapse id="basic-navbar-nav">
+                <Nav className="me-auto">
+                  <Nav.Link href="/">Dashboard</Nav.Link>
+                  <Nav.Link href="/selected">Selected</Nav.Link>
+                </Nav>
+                <Button
+                  variant="outline-light"
+                  onClick={logout}
+                  className="ms-auto"
+                >
+                  Logout
+                </Button>
+              </Navbar.Collapse>
+            </Container>
+          </Navbar>
+        )}
+        <Container>
+          <Routes>
+            <Route path="/login" element={<Login />} />
+            <Route
+              path="/"
+              element={
+                <ProtectedRoute>
+                  <StockTabs
+                    gainers={gainers}
+                    losers={losers}
+                    onDateChange={onDateChange}
+                  />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/selected"
+              element={
+                <ProtectedRoute>
+                  <SelectedStocksPage />
+                </ProtectedRoute>
+              }
+            />
+          </Routes>
+        </Container>
+      </>
+    </SelectedStocksProvider>
   );
 };
 
