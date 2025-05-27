@@ -3,7 +3,6 @@ import { Navbar, Nav, Container, Button } from "react-bootstrap";
 import StockTabs from "./components/StockTabs";
 import SelectedStocksPage from "./components/SelectedStocksPage";
 import Login from "./components/Login";
-import ProtectedRoute from "./components/ProtectedRoute";
 
 import { SelectedStocksProvider } from "./context/SelectedStocksContext";
 import { AuthProvider, useAuth } from "./context/AuthContext";
@@ -14,19 +13,13 @@ import { getApiUrl, getWebSocketUrl, getAuthUrl } from "./utils/utils"; // Impor
 function App() {
   return (
     <Router>
-      <AuthProvider>
-        <AppContent />
-      </AuthProvider>
+      <AppContent />
     </Router>
   );
 }
 
 const AppContent = () => {
-  const { accessToken, logout } = useAuth();
-  const [gainers, setGainers] = useState([]);
-  const [losers, setLosers] = useState([]);
   useEffect(() => {
-    loadData();
     const wsUrl = getWebSocketUrl();
     console.log(`Attempting to connect to WebSocket at ${wsUrl}`);
     const websocket = new WebSocket(wsUrl);
@@ -55,97 +48,31 @@ const AppContent = () => {
     };
   }, []);
 
-  const onDateChange = (date, dateString) => {
-    console.log("Selected date:", dateString);
-    const data = {
-      date,
-    };
-
-    const options = {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify(data),
-    };
-    fetch(getApiUrl("getPastData"), options)
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        setGainers(data.gainers);
-        setLosers(data.losers);
-      })
-      .catch((error) => {
-        console.error("Error:", error);
-      });
-  };
-
-  const loadData = async () => {
-    try {
-      const response = await fetch(getApiUrl("data"));
-      const data = await response.json();
-      setGainers(data.gainers);
-      setLosers(data.losers);
-    } catch (error) {
-      console.error("Error fetching data:", error);
-    }
-  };
-
   return (
-    <SelectedStocksProvider losers={losers}>
-      <>
-        {accessToken && (
-          <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
-            <Container>
-              <Navbar.Brand href="/">Stock Dashboard</Navbar.Brand>
-              <Navbar.Toggle aria-controls="basic-navbar-nav" />
-              <Navbar.Collapse id="basic-navbar-nav">
-                <Nav className="me-auto">
-                  <Nav.Link href="/">Dashboard</Nav.Link>
-                  <Nav.Link href="/selected">Selected</Nav.Link>
-                </Nav>
-                <Button
-                  variant="outline-light"
-                  onClick={logout}
-                  className="ms-auto"
-                >
-                  Logout
-                </Button>
-              </Navbar.Collapse>
-            </Container>
-          </Navbar>
-        )}
+    <>
+      <Navbar bg="dark" variant="dark" expand="lg" className="mb-4">
         <Container>
-          <Routes>
-            <Route path="/login" element={<Login />} />
-            <Route
-              path="/"
-              element={
-                <ProtectedRoute>
-                  <StockTabs
-                    gainers={gainers}
-                    losers={losers}
-                    onDateChange={onDateChange}
-                  />
-                </ProtectedRoute>
-              }
-            />
-            <Route
-              path="/selected"
-              element={
-                <ProtectedRoute>
-                  <SelectedStocksPage />
-                </ProtectedRoute>
-              }
-            />
-          </Routes>
+          <Navbar.Brand href="/">Stock Dashboard</Navbar.Brand>
+          <Navbar.Toggle aria-controls="basic-navbar-nav" />
+          <Navbar.Collapse id="basic-navbar-nav">
+            <Nav className="me-auto">
+              <Nav.Link href="/">Dashboard</Nav.Link>
+              <Nav.Link href="/accessToken">Initiate Websocket</Nav.Link>
+            </Nav>
+          </Navbar.Collapse>
         </Container>
-      </>
-    </SelectedStocksProvider>
+      </Navbar>
+
+      <Container>
+        <Routes>
+          <Route path="/login" element={<Login />} />
+
+          <Route path="/" element={<StockTabs />} />
+
+          <Route path="/accessToken" element={<Login />} />
+        </Routes>
+      </Container>
+    </>
   );
 };
 

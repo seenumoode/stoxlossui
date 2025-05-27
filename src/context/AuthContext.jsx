@@ -30,7 +30,6 @@ export const AuthProvider = ({ children }) => {
         }
         console.log("Response:", response);
         setAccessToken(token);
-        navigate("/");
       })
       .then((data) => {
         console.log("Success:", data);

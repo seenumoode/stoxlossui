@@ -1,12 +1,13 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Tabs, Tab, Row, Col, Form, InputGroup, Button } from "react-bootstrap";
 import { FaSearch } from "react-icons/fa";
 import StockCard from "./StockCard";
 import StockTable from "./StockTable";
 import StockViewToggle from "./StockViewToggle";
-import { useSelectedStocks } from "../context/SelectedStocksContext";
+import { useSelectedStocks } from "../hooks/useSelectedStocks";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
+import { getApiUrl, getWebSocketUrl, getAuthUrl } from "../utils/utils";
 
 const calculateContinuousChanges = (data, type) => {
   if (!data || !Array.isArray(data)) return 0;
@@ -23,12 +24,20 @@ const calculateContinuousChanges = (data, type) => {
   return count;
 };
 
-const StockTabs = ({ gainers, losers, onDateChange }) => {
+const StockTabs = () => {
   const [view, setView] = useState("card");
   const [searchQuery, setSearchQuery] = useState("");
   const [sortOption, setSortOption] = useState("default");
-  const { selectedStocks, saveSelectedStocks } = useSelectedStocks();
+  const [gainers, setGainers] = useState([]);
+  const [losers, setLosers] = useState([]);
+  const [selectedStocks, setSelectedStocks] = useState([]);
+  const [hasUserModified, setHasUserModified] = useState(false);
+  //const { selectedStocks, saveSelectedStocks } = useSelectedStocks(losers);
   const todayDate = new Date();
+  useEffect(() => {
+    loadData();
+  }, []);
+
   const formattedDate = todayDate
     .toLocaleDateString("en-GB", {
       day: "2-digit",
@@ -47,6 +56,89 @@ const StockTabs = ({ gainers, losers, onDateChange }) => {
         typeof stock.high === "number" &&
         typeof stock.low === "number"
     );
+  };
+  const onDateChange = (date, dateString) => {
+    console.log("Selected date:", dateString);
+    const data = {
+      date,
+    };
+
+    const options = {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify(data),
+    };
+    fetch(getApiUrl("getPastData"), options)
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        setGainers(data.gainers);
+        setLosers(data.losers);
+      })
+      .catch((error) => {
+        console.error("Error:", error);
+      });
+  };
+  const toggleStockSelection = (stock) => {
+    setHasUserModified(true);
+    setSelectedStocks((prevSelected) => {
+      const isSelected = prevSelected.some(
+        (s) => s.instrumentKey === stock.instrumentKey
+      );
+      if (isSelected) {
+        return prevSelected.filter(
+          (s) => s.instrumentKey !== stock.instrumentKey
+        );
+      } else {
+        return [...prevSelected, stock];
+      }
+    });
+  };
+
+  const saveSelectedStocks = () => {
+    console.log("Saving selected stocks:", selectedStocks);
+    alert(`Saved ${selectedStocks.length} stocks!`);
+  };
+  const loadData = async () => {
+    try {
+      const response = await fetch(getApiUrl("data"));
+      const data = await response.json();
+      setGainers(data.gainers);
+      setLosers(data.losers);
+      if (!data.losers || !Array.isArray(data.losers) || hasUserModified)
+        return;
+
+      const preSelected = data.losers.filter((stock) => {
+        if (
+          stock.data &&
+          Array.isArray(stock.data) &&
+          stock.data.length >= 3 &&
+          typeof stock.high === "number" &&
+          typeof stock.data[2].close === "number"
+        ) {
+          const highGreaterThanClose = stock.high > stock.data[2].close;
+          const allNegativePercentageChange =
+            typeof stock.data[0].percentageChange === "number" &&
+            typeof stock.data[1].percentageChange === "number" &&
+            typeof stock.data[2].percentageChange === "number" &&
+            stock.data[0].percentageChange < 0 &&
+            stock.data[1].percentageChange < 0 &&
+            stock.data[2].percentageChange < 0;
+          return highGreaterThanClose && allNegativePercentageChange;
+        }
+        return false;
+      });
+
+      setSelectedStocks(preSelected);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
   };
 
   const filterStocks = (stocks) => {
@@ -171,7 +263,7 @@ const StockTabs = ({ gainers, losers, onDateChange }) => {
               {filteredGainers.length > 0 ? (
                 filteredGainers.map((stock) => (
                   <Col key={stock.instrumentKey}>
-                    <StockCard stock={stock} />
+                    <StockCard stock={stock} losers={losers} />
                   </Col>
                 ))
               ) : (
@@ -192,7 +284,11 @@ const StockTabs = ({ gainers, losers, onDateChange }) => {
               {filteredLosers.length > 0 ? (
                 filteredLosers.map((stock) => (
                   <Col key={stock.instrumentKey}>
-                    <StockCard stock={stock} />
+                    <StockCard
+                      stock={stock}
+                      selectedStocks={selectedStocks}
+                      toggleStockSelection={toggleStockSelection}
+                    />
                   </Col>
                 ))
               ) : (

@@ -1,6 +1,5 @@
 // src/components/StockCard.jsx
 import { Card, ListGroup, Badge } from "react-bootstrap";
-import { useSelectedStocks } from "../context/SelectedStocksContext";
 
 // Utility function to format timestamp to readable date
 const formatDate = (timestamp) => {
@@ -15,10 +14,8 @@ const formatDate = (timestamp) => {
       });
 };
 
-const StockCard = ({ stock }) => {
-  const { selectedStocks, toggleStockSelection } = useSelectedStocks();
-
-  const isSelected = selectedStocks.some(
+const StockCard = ({ stock, selectedStocks }) => {
+  const isSelected = selectedStocks?.some(
     (s) => s.instrumentKey === stock.instrumentKey
   );
 
