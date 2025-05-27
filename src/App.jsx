@@ -1,6 +1,7 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import { Navbar, Nav, Container, Button } from "react-bootstrap";
 import StockTabs from "./components/StockTabs";
+import Stock from "./components/Stock";
 import SelectedStocksPage from "./components/SelectedStocksPage";
 import Login from "./components/Login";
 
@@ -70,6 +71,7 @@ const AppContent = () => {
           <Route path="/" element={<StockTabs />} />
 
           <Route path="/accessToken" element={<Login />} />
+          <Route path="/stock/:key/:name" element={<Stock />}></Route>
         </Routes>
       </Container>
     </>

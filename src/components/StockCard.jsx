@@ -1,5 +1,6 @@
 // src/components/StockCard.jsx
 import { Card, ListGroup, Badge } from "react-bootstrap";
+import { useNavigate } from "react-router-dom";
 
 // Utility function to format timestamp to readable date
 const formatDate = (timestamp) => {
@@ -18,10 +19,15 @@ const StockCard = ({ stock, selectedStocks }) => {
   const isSelected = selectedStocks?.some(
     (s) => s.instrumentKey === stock.instrumentKey
   );
+  const navigate = useNavigate();
+
+  const cardSelect = async () => {
+    navigate("/stock/" + stock.instrumentKey + "/" + stock.name);
+  };
 
   return (
     <Card className="stock-card shadow-sm">
-      <Card.Body>
+      <Card.Body onClick={cardSelect}>
         <div className="d-flex align-items-center mb-2">
           <input
             type="checkbox"
