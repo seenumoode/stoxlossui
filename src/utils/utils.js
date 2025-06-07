@@ -8,3 +8,7 @@ export const getWebSocketUrl = () => {
 export const getAuthUrl = () => {
   return `https://${BASE_URL}/api/auth`;
 };
+
+export const getToken = () => {
+  return `https://${BASE_URL}/api/getAuth`;
+};
