@@ -1,12 +1,41 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Container, Form, Button, Card } from "react-bootstrap";
 
-import { getAuthUrl } from "../utils/utils";
+import { getAuthUrl, getToken } from "../utils/utils";
+import SessionData from "../services/sessionData";
+
+const sessionData = new SessionData();
 
 const Login = () => {
   const [token, setToken] = useState();
 
   const [accessToken, setAccessToken] = useState(null);
+
+  useEffect(() => {
+    // Fetch the token from the server when the component mounts
+    fetch(getToken())
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Token fetched successfully:", data);
+        if (data.auth) {
+          sessionData.setData({ accessToken: data.auth });
+          console.log(
+            "Access Token set in session data:",
+            sessionData.getData("accessToken")
+          );
+          console.log("Access Tokensssss set in session data:", sessionData);
+          setAccessToken(data.auth);
+        }
+      })
+      .catch((error) => {
+        console.error("Error fetching token:", error);
+      });
+  }, []);
 
   const login = (token) => {
     // For simplicity, validate against a hardcoded token
@@ -29,6 +58,7 @@ const Login = () => {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
         console.log("Response:", response);
+        sessionData.setData({ accessToken: data.auth });
         setAccessToken(token);
       })
       .then((data) => {
