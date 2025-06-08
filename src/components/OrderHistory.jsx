@@ -10,37 +10,20 @@ import {
   Pagination,
 } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import { Bar, Line } from "react-chartjs-2";
-import {
-  Chart as ChartJS,
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend,
-} from "chart.js";
-import SessionData from "../services/sessionData";
+import SessionData from "../services/SessionData";
+
 const sessionData = new SessionData();
 
-// Register Chart.js components
-ChartJS.register(
-  CategoryScale,
-  LinearScale,
-  BarElement,
-  LineElement,
-  PointElement,
-  Title,
-  Tooltip,
-  Legend
-);
-
 const OrderHistory = () => {
-  // Sample data
-  const [orders, setOrders] = useState([]); // Initialize with empty array
+  const [orders, setOrders] = useState([]);
+  const [transactionFilter, setTransactionFilter] = useState("ALL");
+  const [scripFilter, setScripFilter] = useState("ALL");
+  const [sortOrder, setSortOrder] = useState("desc");
+  const [cardsPerPage, setCardsPerPage] = useState(5);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [showUnmatchedBuy, setShowUnmatchedBuy] = useState(false);
 
+  // Fetch data from Upstox API
   useEffect(() => {
     const url = "https://api.upstox.com/v2/charges/historical-trades";
     const headers = {
@@ -76,14 +59,6 @@ const OrderHistory = () => {
       });
   }, []);
 
-  // State for filters, sorting, pagination, and unmatched BUY filter
-  const [transactionFilter, setTransactionFilter] = useState("ALL");
-  const [scripFilter, setScripFilter] = useState("ALL");
-  const [sortOrder, setSortOrder] = useState("desc");
-  const [cardsPerPage, setCardsPerPage] = useState(5);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [showUnmatchedBuy, setShowUnmatchedBuy] = useState(false);
-
   // Calculate Profit/Loss (only for SELL)
   const calculateProfitLoss = (order) => {
     if (order.transaction_type === "SELL") {
@@ -114,7 +89,7 @@ const OrderHistory = () => {
     );
   });
 
-  // Filter orders for trade cards (includes scrip filter and unmatched BUY)
+  // Filter orders for trade cards
   const filteredOrders = orders
     .filter((order) => {
       if (showUnmatchedBuy) return unmatchedBuyOrders.includes(order);
@@ -130,95 +105,12 @@ const OrderHistory = () => {
       return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
     });
 
-  // Filter orders for charts (only transaction type filter)
-  const chartFilteredOrders = orders
-    .filter(
-      (order) =>
-        transactionFilter === "ALL" ||
-        order.transaction_type === transactionFilter
-    )
-    .sort((a, b) => {
-      const dateA = new Date(a.trade_date);
-      const dateB = new Date(b.trade_date);
-      return sortOrder === "desc" ? dateB - dateA : dateA - dateB;
-    });
-
-  // Calculate total profit/loss (based on chart-filtered orders)
-  const totalProfitLoss = chartFilteredOrders
-    .reduce((total, order) => {
-      const pl = calculateProfitLoss(order);
-      return pl !== "N/A" ? total + parseFloat(pl) : total;
-    }, 0)
-    .toFixed(2);
-
   // Pagination logic
   const totalPages = Math.ceil(filteredOrders.length / cardsPerPage);
   const paginatedOrders = filteredOrders.slice(
     (currentPage - 1) * cardsPerPage,
     currentPage * cardsPerPage
   );
-
-  // Prepare data for Bar Chart (Profit/Loss per Scrip from SELL)
-  const scripProfitLoss = {};
-  chartFilteredOrders.forEach((order) => {
-    if (order.transaction_type === "SELL") {
-      const pl = calculateProfitLoss(order);
-      if (pl !== "N/A") {
-        const scrip = order.scrip_name;
-        scripProfitLoss[scrip] = (scripProfitLoss[scrip] || 0) + parseFloat(pl);
-      }
-    }
-  });
-
-  const barChartData = {
-    labels: Object.keys(scripProfitLoss),
-    datasets: [
-      {
-        label: "Profit/Loss (₹)",
-        data: Object.values(scripProfitLoss),
-        backgroundColor: Object.values(scripProfitLoss).map((pl) =>
-          pl >= 0 ? "rgba(39, 174, 96, 0.6)" : "rgba(231, 76, 60, 0.6)"
-        ),
-        borderColor: Object.values(scripProfitLoss).map((pl) =>
-          pl >= 0 ? "rgba(39, 174, 96, 1)" : "rgba(231, 76, 60, 1)"
-        ),
-        borderWidth: 1,
-      },
-    ],
-  };
-
-  // Prepare data for Line Chart (Cumulative Profit/Loss over Time from SELL)
-  const tradeDates = [
-    ...new Set(orders.map((order) => order.trade_date)),
-  ].sort();
-  const cumulativeProfitLoss = [];
-  let runningTotal = 0;
-
-  tradeDates.forEach((date) => {
-    const dailySellOrders = chartFilteredOrders.filter(
-      (order) => order.trade_date === date && order.transaction_type === "SELL"
-    );
-    const dailyPL = dailySellOrders.reduce((sum, order) => {
-      const pl = calculateProfitLoss(order);
-      return pl !== "N/A" ? sum + parseFloat(pl) : sum;
-    }, 0);
-    runningTotal += dailyPL;
-    cumulativeProfitLoss.push(runningTotal.toFixed(2));
-  });
-
-  const lineChartData = {
-    labels: tradeDates,
-    datasets: [
-      {
-        label: "Cumulative Profit/Loss (₹)",
-        data: cumulativeProfitLoss,
-        fill: false,
-        borderColor: "rgba(52, 152, 219, 1)",
-        backgroundColor: "rgba(52, 152, 219, 0.2)",
-        tension: 0.1,
-      },
-    ],
-  };
 
   // Unique scrip names for filter dropdown
   const scripNames = [
@@ -243,10 +135,10 @@ const OrderHistory = () => {
                 className="text-center mb-4"
                 style={{ color: "#2c3e50", fontWeight: "bold" }}
               >
-                Order History Dashboard
+                Order History
               </Card.Title>
               <Row className="mb-4">
-                <Col md={4}>
+                <Col md={6}>
                   <Form.Group controlId="transactionFilter">
                     <Form.Label style={{ color: "#34495e" }}>
                       Filter by Transaction Type
@@ -255,7 +147,7 @@ const OrderHistory = () => {
                       value={transactionFilter}
                       onChange={(e) => {
                         setTransactionFilter(e.target.value);
-                        setCurrentPage(1); // Reset to first page
+                        setCurrentPage(1);
                       }}
                       style={{ backgroundColor: "#ecf0f1", color: "#2c3e50" }}
                     >
@@ -265,7 +157,7 @@ const OrderHistory = () => {
                     </Form.Select>
                   </Form.Group>
                 </Col>
-                <Col md={4}>
+                <Col md={6}>
                   <Form.Group controlId="sortOrder">
                     <Form.Label style={{ color: "#34495e" }}>
                       Sort by Trade Date
@@ -274,7 +166,7 @@ const OrderHistory = () => {
                       value={sortOrder}
                       onChange={(e) => {
                         setSortOrder(e.target.value);
-                        setCurrentPage(1); // Reset to first page
+                        setCurrentPage(1);
                       }}
                       style={{ backgroundColor: "#ecf0f1", color: "#2c3e50" }}
                     >
@@ -282,77 +174,6 @@ const OrderHistory = () => {
                       <option value="asc">Oldest First</option>
                     </Form.Select>
                   </Form.Group>
-                </Col>
-                <Col md={4} className="text-center">
-                  <h4 style={{ color: "#34495e" }}>Total Profit/Loss</h4>
-                  <h3
-                    style={{
-                      color: totalProfitLoss >= 0 ? "#27ae60" : "#e74c3c",
-                      fontWeight: "bold",
-                    }}
-                  >
-                    ₹{totalProfitLoss}
-                  </h3>
-                </Col>
-              </Row>
-
-              {/* Charts */}
-              <Row className="mb-4">
-                <Col md={6}>
-                  <Card
-                    className="shadow-sm"
-                    style={{ backgroundColor: "#ffffff", borderRadius: "10px" }}
-                  >
-                    <Card.Body>
-                      <Card.Title style={{ color: "#2c3e50" }}>
-                        Profit/Loss by Scrip
-                      </Card.Title>
-                      <Bar
-                        data={barChartData}
-                        options={{
-                          responsive: true,
-                          plugins: {
-                            legend: { position: "top" },
-                            title: {
-                              display: true,
-                              text: "Profit/Loss Distribution",
-                            },
-                          },
-                        }}
-                      />
-                    </Card.Body>
-                  </Card>
-                </Col>
-                <Col md={6}>
-                  <Card
-                    className="shadow-sm"
-                    style={{ backgroundColor: "#ffffff", borderRadius: "10px" }}
-                  >
-                    <Card.Body>
-                      <Card.Title style={{ color: "#2c3e50" }}>
-                        Profit/Loss Over Time
-                      </Card.Title>
-                      <Line
-                        data={lineChartData}
-                        options={{
-                          responsive: true,
-                          plugins: {
-                            legend: { position: "top" },
-                            title: {
-                              display: true,
-                              text: "Cumulative Profit/Loss by Date",
-                            },
-                          },
-                          scales: {
-                            y: {
-                              beginAtZero: true,
-                              title: { display: true, text: "Profit/Loss (₹)" },
-                            },
-                          },
-                        }}
-                      />
-                    </Card.Body>
-                  </Card>
                 </Col>
               </Row>
 
@@ -367,8 +188,8 @@ const OrderHistory = () => {
                       value={scripFilter}
                       onChange={(e) => {
                         setScripFilter(e.target.value);
-                        setShowUnmatchedBuy(false); // Reset unmatched BUY filter
-                        setCurrentPage(1); // Reset to first page
+                        setShowUnmatchedBuy(false);
+                        setCurrentPage(1);
                       }}
                       style={{ backgroundColor: "#ecf0f1", color: "#2c3e50" }}
                     >
@@ -385,8 +206,8 @@ const OrderHistory = () => {
                     variant={showUnmatchedBuy ? "danger" : "primary"}
                     onClick={() => {
                       setShowUnmatchedBuy(!showUnmatchedBuy);
-                      setScripFilter("ALL"); // Reset scrip filter
-                      setCurrentPage(1); // Reset to first page
+                      setScripFilter("ALL");
+                      setCurrentPage(1);
                     }}
                     style={{
                       backgroundColor: showUnmatchedBuy ? "#e74c3c" : "#3498db",
@@ -411,7 +232,7 @@ const OrderHistory = () => {
                       value={cardsPerPage}
                       onChange={(e) => {
                         setCardsPerPage(Number(e.target.value));
-                        setCurrentPage(1); // Reset to first page
+                        setCurrentPage(1);
                       }}
                       style={{
                         backgroundColor: "#ecf0f1",

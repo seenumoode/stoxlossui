@@ -8,10 +8,43 @@ import { NavLink } from "react-router-dom"; // Use NavLink instead of Link
 import "./App.css";
 import PositionsList from "./components/Positions";
 import OrderHistory from "./components/OrderHistory";
+import SessionData from "./services/sessionData";
+import { useEffect } from "react";
+import { getToken } from "./utils/utils";
+import Dashboard from "./components/Dashboard";
+
+const sessionData = new SessionData();
 
 function App() {
   console.log("App component rendered");
-
+  useEffect(() => {
+    // Fetch the token from the server when the component mounts
+    if (sessionData.getData("accessToken")) {
+      setAccessToken(sessionData.getData("accessToken"));
+    } else
+      fetch(getToken())
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Token fetched successfully:", data);
+          if (data.auth) {
+            sessionData.setData({ accessToken: data.auth });
+            console.log(
+              "Access Token set in session data:",
+              sessionData.getData("accessToken")
+            );
+            console.log("Access Tokensssss set in session data:", sessionData);
+            setAccessToken(data.auth);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching token:", error);
+        });
+  }, []);
   return (
     <>
       <Navbar
@@ -36,6 +69,15 @@ function App() {
                 }
               >
                 Dashboard
+              </Nav.Link>
+              <Nav.Link
+                as={NavLink}
+                to="/stocks"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active fw-bold" : ""}`
+                }
+              >
+                Stocks
               </Nav.Link>
               <Nav.Link
                 as={NavLink}
@@ -80,8 +122,8 @@ function App() {
 
       <Container className="py-4">
         <Routes>
-          <Route path="/login" element={<Login />} />
-          <Route path="/" element={<StockTabs />} />
+          <Route path="/" element={<Dashboard />} />
+          <Route path="/stocks" element={<StockTabs />} />
           <Route path="/accessToken" element={<Login />} />
           <Route path="/stock/:key/:name" element={<Stock />} />
           <Route path="/pl" element={<ProfitLoss />} />
