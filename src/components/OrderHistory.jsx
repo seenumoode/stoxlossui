@@ -10,7 +10,7 @@ import {
   Pagination,
 } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
-import SessionData from "../services/SessionData";
+import SessionData from "../services/sessionData";
 
 const sessionData = new SessionData();
 
