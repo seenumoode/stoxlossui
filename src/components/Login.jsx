@@ -13,28 +13,31 @@ const Login = () => {
 
   useEffect(() => {
     // Fetch the token from the server when the component mounts
-    fetch(getToken())
-      .then((response) => {
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        return response.json();
-      })
-      .then((data) => {
-        console.log("Token fetched successfully:", data);
-        if (data.auth) {
-          sessionData.setData({ accessToken: data.auth });
-          console.log(
-            "Access Token set in session data:",
-            sessionData.getData("accessToken")
-          );
-          console.log("Access Tokensssss set in session data:", sessionData);
-          setAccessToken(data.auth);
-        }
-      })
-      .catch((error) => {
-        console.error("Error fetching token:", error);
-      });
+    if (sessionData.getData("accessToken")) {
+      setAccessToken(sessionData.getData("accessToken"));
+    } else
+      fetch(getToken())
+        .then((response) => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then((data) => {
+          console.log("Token fetched successfully:", data);
+          if (data.auth) {
+            sessionData.setData({ accessToken: data.auth });
+            console.log(
+              "Access Token set in session data:",
+              sessionData.getData("accessToken")
+            );
+            console.log("Access Tokensssss set in session data:", sessionData);
+            setAccessToken(data.auth);
+          }
+        })
+        .catch((error) => {
+          console.error("Error fetching token:", error);
+        });
   }, []);
 
   const login = (token) => {

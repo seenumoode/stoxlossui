@@ -6,6 +6,8 @@ import Login from "./components/Login";
 import ProfitLoss from "./components/ProfitLoss";
 import { NavLink } from "react-router-dom"; // Use NavLink instead of Link
 import "./App.css";
+import PositionsList from "./components/Positions";
+import OrderHistory from "./components/OrderHistory";
 
 function App() {
   console.log("App component rendered");
@@ -53,6 +55,24 @@ function App() {
               >
                 PL
               </Nav.Link>
+              <Nav.Link
+                as={NavLink}
+                to="/positions"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active fw-bold" : ""}`
+                }
+              >
+                Positions
+              </Nav.Link>
+              <Nav.Link
+                as={NavLink}
+                to="/orderHistory"
+                className={({ isActive }) =>
+                  `nav-link ${isActive ? "active fw-bold" : ""}`
+                }
+              >
+                Order History
+              </Nav.Link>
             </Nav>
           </Navbar.Collapse>
         </Container>
@@ -65,6 +85,8 @@ function App() {
           <Route path="/accessToken" element={<Login />} />
           <Route path="/stock/:key/:name" element={<Stock />} />
           <Route path="/pl" element={<ProfitLoss />} />
+          <Route path="/positions" element={<PositionsList />} />
+          <Route path="/orderHistory" element={<OrderHistory />} />
         </Routes>
       </Container>
     </>
