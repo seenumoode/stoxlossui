@@ -58,7 +58,6 @@ const StockTabs = () => {
     );
   };
   const onDateChange = (date, dateString) => {
-    console.log("Selected date:", dateString);
     const data = {
       date,
     };
@@ -123,10 +122,7 @@ const StockTabs = () => {
     });
   };
 
-  const saveSelectedStocks = () => {
-    console.log("Saving selected stocks:", selectedStocks);
-    alert(`Saved ${selectedStocks.length} stocks!`);
-  };
+  const saveSelectedStocks = () => {};
   const loadData = async () => {
     try {
       const response = await fetch(getApiUrl("data"));

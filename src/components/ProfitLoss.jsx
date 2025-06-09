@@ -59,11 +59,9 @@ const ProfitLoss = () => {
       headers: headers,
     })
       .then((response) => {
-        console.log(response.status);
         return response.json();
       })
       .then((data) => {
-        console.log(data);
         if (data && data.data) {
           // Map the data to the expected format
           const formattedData = data.data.map((trade) => ({
@@ -207,7 +205,6 @@ const ProfitLoss = () => {
     .replace(/ /g, "-");
 
   const onDateChange = (date, dateString) => {
-    console.log("Selected date:", dateString);
     setSelectedDate(new Date(date));
   };
 

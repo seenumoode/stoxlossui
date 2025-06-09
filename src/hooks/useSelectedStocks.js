@@ -47,10 +47,7 @@ export const useSelectedStocks = (losers) => {
     });
   };
 
-  const saveSelectedStocks = () => {
-    console.log("Saving selected stocks:", selectedStocks);
-    alert(`Saved ${selectedStocks.length} stocks!`);
-  };
+  const saveSelectedStocks = () => {};
 
   return {
     selectedStocks,

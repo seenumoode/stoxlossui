@@ -28,12 +28,10 @@ export const AuthProvider = ({ children }) => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        console.log("Response:", response);
+
         setAccessToken(token);
       })
-      .then((data) => {
-        console.log("Success:", data);
-      })
+      .then((data) => {})
       .catch((error) => {
         console.error("Error:", error);
       });

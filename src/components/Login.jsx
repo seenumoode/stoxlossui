@@ -24,14 +24,9 @@ const Login = () => {
           return response.json();
         })
         .then((data) => {
-          console.log("Token fetched successfully:", data);
           if (data.auth) {
             sessionData.setData({ accessToken: data.auth });
-            console.log(
-              "Access Token set in session data:",
-              sessionData.getData("accessToken")
-            );
-            console.log("Access Tokensssss set in session data:", sessionData);
+
             setAccessToken(data.auth);
           }
         })
@@ -60,13 +55,11 @@ const Login = () => {
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        console.log("Response:", response);
+
         sessionData.setData({ accessToken: data.auth });
         setAccessToken(token);
       })
-      .then((data) => {
-        console.log("Success:", data);
-      })
+      .then((data) => {})
       .catch((error) => {
         console.error("Error:", error);
       });

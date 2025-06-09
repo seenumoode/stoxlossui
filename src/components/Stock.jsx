@@ -1,17 +1,11 @@
 import { useEffect, useState } from "react";
 import { useParams } from "react-router";
 import ReactApexChart from "react-apexcharts";
+import HistoricData from "./HistoricData";
 
 function Stock() {
   let { name, key } = useParams();
-  const [data, setData] = useState([
-    ["Day", "", "", "", ""],
-    ["Mon", 20, 28, 38, 45],
-    ["Tue", 31, 38, 55, 66],
-    ["Wed", 50, 55, 77, 80],
-    ["Thu", 77, 77, 66, 50],
-    ["Fri", 68, 66, 22, 15],
-  ]);
+  const [data, setData] = useState([]);
 
   const todayDate = new Date();
   const formattedDate = todayDate
@@ -80,7 +74,7 @@ function Stock() {
       return ele;
     });
     //resMd.reverse();
-    console.log(JSON.stringify(resMd));
+
     setData(resMd);
   }
 
@@ -95,6 +89,12 @@ function Stock() {
         series={series}
         type="candlestick"
         height={350}
+      />
+
+      <HistoricData
+        insKey={key}
+        name={name}
+        close={data.length > 0 ? data[0][4] : 0}
       />
     </>
   );

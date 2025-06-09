@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import { Container, Row, Col, Card } from "react-bootstrap";
+import { Container, Row, Col, Card, Alert } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import { Bar, Line } from "react-chartjs-2";
 import {
@@ -80,25 +80,39 @@ const Dashboard = () => {
       );
       if (matchingBuy) {
         const profitLoss = (order.price - matchingBuy.price) * order.quantity;
-        return profitLoss.toFixed(2);
+        return {
+          profitLoss: profitLoss.toFixed(2),
+          buyAmount: matchingBuy.amount,
+        };
       }
     }
-    return "N/A";
+    return { profitLoss: "N/A", buyAmount: 0 };
   };
 
-  // Calculate total profit/loss
-  const totalProfitLoss = orders
-    .reduce((total, order) => {
-      const pl = calculateProfitLoss(order);
-      return pl !== "N/A" ? total + parseFloat(pl) : total;
-    }, 0)
-    .toFixed(2);
+  // Calculate total profit/loss and total investment
+  const { totalProfitLoss, totalInvestment } = orders.reduce(
+    (acc, order) => {
+      const { profitLoss, buyAmount } = calculateProfitLoss(order);
+      if (profitLoss !== "N/A") {
+        acc.totalProfitLoss += parseFloat(profitLoss);
+        acc.totalInvestment += buyAmount;
+      }
+      return acc;
+    },
+    { totalProfitLoss: 0, totalInvestment: 0 }
+  );
+
+  const formattedTotalProfitLoss = totalProfitLoss.toFixed(2);
+  const roi =
+    totalInvestment > 0
+      ? ((totalProfitLoss / totalInvestment) * 100).toFixed(2)
+      : "N/A";
 
   // Prepare data for Bar Chart (Profit/Loss per Scrip from SELL)
   const scripProfitLoss = {};
   orders.forEach((order) => {
     if (order.transaction_type === "SELL") {
-      const pl = calculateProfitLoss(order);
+      const pl = calculateProfitLoss(order).profitLoss;
       if (pl !== "N/A") {
         const scrip = order.scrip_name;
         scripProfitLoss[scrip] = (scripProfitLoss[scrip] || 0) + parseFloat(pl);
@@ -135,7 +149,7 @@ const Dashboard = () => {
       (order) => order.trade_date === date && order.transaction_type === "SELL"
     );
     const dailyPL = dailySellOrders.reduce((sum, order) => {
-      const pl = calculateProfitLoss(order);
+      const pl = calculateProfitLoss(order).profitLoss;
       return pl !== "N/A" ? sum + parseFloat(pl) : sum;
     }, 0);
     runningTotal += dailyPL;
@@ -155,6 +169,27 @@ const Dashboard = () => {
       },
     ],
   };
+
+  if (orders.length === 0) {
+    return (
+      <Container fluid className="my-5">
+        <h2 className="text-center mb-4" style={{ color: "#007BFF" }}>
+          Dashboard
+        </h2>
+        <Row className="justify-content-center">
+          <Col xs={12} md={6}>
+            <Alert variant="warning" className="text-center">
+              <h4>Unable to Load Dashboard</h4>
+              <p>
+                Token is expired or not initiated. Please go to Initiate
+                Websocket.
+              </p>
+            </Alert>
+          </Col>
+        </Row>
+      </Container>
+    );
+  }
 
   return (
     <Container
@@ -176,7 +211,7 @@ const Dashboard = () => {
                 Dashboard
               </Card.Title>
               <Row className="mb-4">
-                <Col className="text-center">
+                <Col md={6} className="text-center">
                   <h4 style={{ color: "#34495e" }}>Total Profit/Loss</h4>
                   <h3
                     style={{
@@ -184,7 +219,23 @@ const Dashboard = () => {
                       fontWeight: "bold",
                     }}
                   >
-                    ₹{totalProfitLoss}
+                    ₹{formattedTotalProfitLoss}
+                  </h3>
+                </Col>
+                <Col md={6} className="text-center">
+                  <h4 style={{ color: "#34495e" }}>ROI</h4>
+                  <h3
+                    style={{
+                      color:
+                        roi === "N/A"
+                          ? "#7f8c8d"
+                          : roi >= 0
+                          ? "#27ae60"
+                          : "#e74c3c",
+                      fontWeight: "bold",
+                    }}
+                  >
+                    {roi === "N/A" ? roi : `${roi}%`}
                   </h3>
                 </Col>
               </Row>

@@ -12,22 +12,26 @@ const Positions = ({ position }) => {
     average_price,
     quantity,
     multiplier,
-    exchange,
+    buy_price,
+    sell_price,
+    overnight_buy_quantity,
   } = position;
 
-  // Calculate P&L from close price
-  const plFromClose = (
-    (last_price - average_price) *
-    quantity *
-    multiplier
-  ).toFixed(2);
+  // Determine if position is closed (sell_price > 0)
+  const isClosed = sell_price > 0;
+
+  // Calculate P&L
+  const plFromClose = isClosed
+    ? ((sell_price - buy_price) * overnight_buy_quantity * multiplier).toFixed(
+        2
+      )
+    : ((last_price - average_price) * quantity * multiplier).toFixed(2);
   const plColor = plFromClose >= 0 ? "text-profit" : "text-loss";
 
-  // Calculate P&L percentage using Close Price and Average Price
-  const plPercentage = (
-    ((last_price - average_price) / average_price) *
-    100
-  ).toFixed(2);
+  // Calculate P&L percentage
+  const plPercentage = isClosed
+    ? (((sell_price - buy_price) / buy_price) * 100).toFixed(2)
+    : (((last_price - average_price) / average_price) * 100).toFixed(2);
   const plPercentageColor = plPercentage >= 0 ? "text-profit" : "text-loss";
   const plPercentageBg =
     plPercentage >= 0 ? "bg-gradient-profit" : "bg-gradient-loss";
@@ -37,7 +41,7 @@ const Positions = ({ position }) => {
       <Card.Header className="bg-primary text-white d-flex justify-content-between align-items-center">
         <h5 className="mb-0">{trading_symbol}</h5>
         <Badge bg="light" text="dark">
-          {exchange}
+          {isClosed ? "Closed" : "Open"}
         </Badge>
       </Card.Header>
       <Card.Body className="bg-light">
@@ -107,7 +111,6 @@ const PositionsList = () => {
         return response.json();
       })
       .then((data) => {
-        console.log("Fetched positions:", data);
         if (Array.isArray(data.data)) {
           setPositions(data.data);
         } else {
@@ -122,7 +125,7 @@ const PositionsList = () => {
     <div className="container py-4">
       <Row className="justify-content-center">
         {positions.map((position, index) => (
-          <Col key={index} xs={12} md={3} lg={6}>
+          <Col key={index} xs={12} md={8} lg={6}>
             <Positions position={position} />
           </Col>
         ))}
