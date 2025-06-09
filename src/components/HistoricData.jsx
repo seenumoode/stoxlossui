@@ -12,7 +12,7 @@ const HistoricData = ({ insKey, name, close }) => {
     const today = new Date();
     const endDate = today.toISOString().split("T")[0]; // YYYY-MM-DD format
     const startDate = new Date(today);
-    startDate.setMonth(today.getMonth() - 1);
+    startDate.setMonth(today.getMonth() - 2);
     return {
       startDate: startDate.toISOString().split("T")[0], // YYYY-MM-DD format
       endDate,
