@@ -25,13 +25,13 @@ const Positions = ({ position }) => {
     ? ((sell_price - buy_price) * overnight_buy_quantity * multiplier).toFixed(
         2
       )
-    : ((last_price - average_price) * quantity * multiplier).toFixed(2);
+    : ((last_price - buy_price) * quantity * multiplier).toFixed(2);
   const plColor = plFromClose >= 0 ? "text-profit" : "text-loss";
 
   // Calculate P&L percentage
   const plPercentage = isClosed
     ? (((sell_price - buy_price) / buy_price) * 100).toFixed(2)
-    : (((last_price - average_price) / average_price) * 100).toFixed(2);
+    : (((last_price - buy_price) / buy_price) * 100).toFixed(2);
   const plPercentageColor = plPercentage >= 0 ? "text-profit" : "text-loss";
   const plPercentageBg =
     plPercentage >= 0 ? "bg-gradient-profit" : "bg-gradient-loss";
@@ -60,14 +60,14 @@ const Positions = ({ position }) => {
           </Col>
           <Col xs={6} md={3} className="mb-3">
             <div className="info-box bg-gradient-warning">
-              <span className="info-label">Average Price</span>
-              <h6 className="info-value">₹{average_price.toFixed(2)}</h6>
+              <span className="info-label">Buy Price</span>
+              <h6 className="info-value">₹{buy_price.toFixed(2)}</h6>
             </div>
           </Col>
           <Col xs={6} md={3} className="mb-3">
             <div className="info-box bg-gradient-danger">
-              <span className="info-label">Quantity</span>
-              <h6 className="info-value">{quantity}</h6>
+              <span className="info-label">Sell Price</span>
+              <h6 className="info-value">₹{sell_price.toFixed(2)}</h6>
             </div>
           </Col>
         </Row>

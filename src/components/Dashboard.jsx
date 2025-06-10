@@ -31,6 +31,8 @@ ChartJS.register(
 
 const Dashboard = () => {
   const [orders, setOrders] = useState([]);
+  const today = new Date();
+  const formattedDate = today.toISOString().split("T")[0];
 
   // Fetch data from Upstox API
   useEffect(() => {
@@ -42,7 +44,7 @@ const Dashboard = () => {
     const params = new URLSearchParams({
       segment: "FO",
       start_date: "2025-06-01",
-      end_date: "2025-06-08",
+      end_date: formattedDate,
       page_number: "1",
       page_size: "100",
     });

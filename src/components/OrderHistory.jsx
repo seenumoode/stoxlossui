@@ -22,6 +22,8 @@ const OrderHistory = () => {
   const [cardsPerPage, setCardsPerPage] = useState(5);
   const [currentPage, setCurrentPage] = useState(1);
   const [showUnmatchedBuy, setShowUnmatchedBuy] = useState(false);
+  const today = new Date();
+  const formattedDate = today.toISOString().split("T")[0];
 
   // Fetch data from Upstox API
   useEffect(() => {
@@ -33,7 +35,7 @@ const OrderHistory = () => {
     const params = new URLSearchParams({
       segment: "FO",
       start_date: "2025-06-01",
-      end_date: "2025-06-08",
+      end_date: formattedDate,
       page_number: "1",
       page_size: "100",
     });

@@ -51,7 +51,7 @@ const ProfitLoss = () => {
       segment: "FO",
       financial_year: "2526",
       page_number: "1",
-      page_size: "4",
+      page_size: "15",
     });
 
     fetch(`${url}?${params}`, {
