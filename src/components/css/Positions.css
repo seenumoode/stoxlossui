@@ -1,0 +1,174 @@
+/* Import Inter font */
+@import url("https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap");
+
+.position-card {
+  border: 1px solid #e5e7eb;
+  border-radius: 10px;
+  overflow: hidden;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  max-width: 100%;
+  background-color: #f9fafb;
+  font-family: "Inter", sans-serif;
+}
+
+.position-card:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.08);
+}
+
+.card-header.bg-primary {
+  background: linear-gradient(45deg, #6b7280, #9ca3af) !important;
+  font-weight: 500;
+  padding: 10px 14px;
+}
+
+.card-body {
+  padding: 1.25rem;
+}
+
+.trading-symbol {
+  font-size: 0.95rem;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.badge-container {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.bg-status {
+  background-color: #e5e7eb !important;
+  color: #374151 !important;
+  font-weight: 400;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.bg-profit {
+  background: linear-gradient(45deg, #649e6d, #94c29b) !important;
+  color: #166534 !important;
+  font-weight: 400;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.bg-loss {
+  background: linear-gradient(45deg, #b85c5c, #d88b8b) !important;
+  color: #dc2626 !important;
+  font-weight: 400;
+  font-size: 0.85rem;
+  padding: 4px 8px;
+  border-radius: 4px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+}
+
+.info-box {
+  padding: 10px;
+  border-radius: 6px;
+  text-align: left;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+  transition: box-shadow 0.2s ease;
+}
+
+.info-box:hover {
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.bg-gradient-info {
+  background: linear-gradient(
+    45deg,
+    #60a5fa,
+    #93c5fd
+  ) !important; /* Light blue */
+}
+
+.bg-gradient-warning {
+  background: linear-gradient(
+    45deg,
+    #f4c464,
+    #fedc8b
+  ) !important; /* Light gold */
+}
+
+.bg-gradient-danger {
+  background: linear-gradient(
+    45deg,
+    #f87171,
+    #fca5a5
+  ) !important; /* Light coral */
+}
+
+.bg-gradient-primary {
+  background: linear-gradient(
+    45deg,
+    #60a5fa,
+    #93c5fd
+  ) !important; /* Light blue */
+}
+
+.info-label {
+  font-size: 0.75rem;
+  color: #6b7280; /* Darker gray for contrast */
+  opacity: 1;
+  display: block;
+}
+
+.info-value {
+  font-size: 1rem;
+  font-weight: 400;
+  margin: 0;
+  color: #1f2937; /* Dark gray for readability */
+}
+
+.text-profit {
+  color: #166534 !important; /* Light green for profit */
+}
+
+.text-loss {
+  color: #dc2626 !important; /* Light red for loss */
+}
+
+.dashboard-container {
+  background-color: #f3f4f6;
+  padding: 2rem;
+}
+
+.dashboard-title {
+  color: #1e40af;
+  font-weight: 600;
+  font-family: "Inter", sans-serif;
+}
+
+.alert-warning {
+  border-left: 4px solid #f59e0b;
+  font-family: "Inter", sans-serif;
+}
+
+/* Responsive tweaks */
+@media (max-width: 576px) {
+  .info-box {
+    padding: 8px;
+  }
+
+  .info-label {
+    font-size: 0.7rem;
+  }
+
+  .info-value {
+    font-size: 0.95rem;
+  }
+
+  .bg-status,
+  .bg-profit,
+  .bg-loss {
+    font-size: 0.75rem;
+    padding: 3px 6px;
+  }
+}
