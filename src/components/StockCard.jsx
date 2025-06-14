@@ -1,8 +1,6 @@
-// src/components/StockCard.jsx
 import { Card, ListGroup, Badge } from "react-bootstrap";
 import { useNavigate } from "react-router-dom";
 
-// Utility function to format timestamp to readable date
 const formatDate = (timestamp) => {
   if (!timestamp) return "N/A";
   const date = new Date(timestamp);
@@ -15,10 +13,7 @@ const formatDate = (timestamp) => {
       });
 };
 
-const StockCard = ({ stock, selectedStocks }) => {
-  const isSelected = selectedStocks?.some(
-    (s) => s.instrumentKey === stock.instrumentKey
-  );
+const StockCard = ({ stock }) => {
   const navigate = useNavigate();
 
   const cardSelect = async () => {
@@ -26,19 +21,10 @@ const StockCard = ({ stock, selectedStocks }) => {
   };
 
   return (
-    <Card className="stock-card shadow-sm">
-      <Card.Body onClick={cardSelect}>
-        <div className="d-flex align-items-center mb-2">
-          <input
-            type="checkbox"
-            checked={isSelected}
-            onChange={() => toggleStockSelection(stock)}
-            className="me-2"
-            aria-label={`Select ${stock.name}`}
-          />
-          <Card.Title className="mb-0">{stock.name}</Card.Title>
-        </div>
-        <Card.Subtitle className="mb-2 text-muted">
+    <Card className="stock-card shadow-sm" onClick={cardSelect}>
+      <Card.Body>
+        <Card.Title className="mb-2">{stock.name}</Card.Title>
+        <Card.Subtitle className="mb-3 text-muted d-flex align-items-center">
           {stock.percentageChange.toFixed(2)}%
           <Badge
             bg={stock.percentageChange >= 0 ? "success" : "danger"}
@@ -50,7 +36,7 @@ const StockCard = ({ stock, selectedStocks }) => {
         <ListGroup variant="flush" className="historical-list">
           {stock.data && stock.data.length > 0 ? (
             stock.data.map((entry, index) => (
-              <ListGroup.Item key={index}>
+              <ListGroup.Item key={index} className="py-2">
                 <div className="d-flex justify-content-between align-items-center">
                   <span>{formatDate(entry.date)}</span>
                   <div>
@@ -69,11 +55,11 @@ const StockCard = ({ stock, selectedStocks }) => {
               </ListGroup.Item>
             ))
           ) : (
-            <ListGroup.Item>
+            <ListGroup.Item className="py-2">
               <span className="text-muted">No historical data available</span>
             </ListGroup.Item>
           )}
-          <ListGroup.Item>
+          <ListGroup.Item className="py-2">
             <div className="d-flex justify-content-between">
               <span>
                 High:{" "}

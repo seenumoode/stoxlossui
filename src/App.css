@@ -32,6 +32,7 @@ h1 {
   background: linear-gradient(145deg, #ffffff, #e6e6e6);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   overflow: hidden;
+  cursor: pointer;
 }
 
 .stock-card:hover {
@@ -40,15 +41,18 @@ h1 {
 }
 
 .stock-card .card-title {
-  font-size: 1.25rem;
+  font-size: 1.2rem;
   color: #1a3c34;
-  text-transform: uppercase;
+  text-transform: capitalize;
   letter-spacing: 0.5px;
+  font-weight: 500;
 }
 
 .stock-card .card-subtitle {
-  font-size: 0.9rem;
+  font-size: 0.95rem;
   color: #6c757d;
+  display: flex;
+  align-items: center;
 }
 
 .historical-list {
@@ -79,18 +83,28 @@ h1 {
   transform: scale(1.1);
 }
 
+.historical-list .text-muted {
+  font-size: 0.8rem;
+  min-width: 70px;
+  text-align: right;
+}
+
+.historical-list .text-primary {
+  font-weight: 500;
+  color: #007bff !important;
+}
+
+.historical-list .text-secondary {
+  font-weight: 500;
+  color: #6c757d !important;
+}
+
 .text-primary {
   color: #007bff !important;
 }
 
 .text-secondary {
   color: #6c757d !important;
-}
-
-.historical-list .list-group-item .text-muted {
-  font-size: 0.8rem;
-  min-width: 70px;
-  text-align: right;
 }
 
 .search-input .input-group {
@@ -193,20 +207,41 @@ h1 {
   background-color: #dc3545;
 }
 
-input[type="checkbox"] {
-  cursor: pointer;
-  width: 16px;
-  height: 16px;
-  accent-color: #007bff;
+.option-counter {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
-input[type="checkbox"]:hover {
-  opacity: 0.8;
+.option-counter .option-label {
+  color: #343a40;
 }
 
-.table td input[type="checkbox"] {
-  margin: 0 auto;
-  display: block;
+.option-counter .option-count {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  color: white;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: transform 0.2s;
+}
+
+.option-counter .option-count:hover {
+  transform: scale(1.1);
+}
+
+.call-options .option-count {
+  background-color: #28a745; /* Green for Call Options */
+}
+
+.put-options .option-count {
+  background-color: #dc3545; /* Red for Put Options */
 }
 
 @media (max-width: 576px) {
@@ -231,8 +266,13 @@ input[type="checkbox"]:hover {
     height: 10px;
   }
 
-  input[type="checkbox"] {
-    width: 14px;
-    height: 14px;
+  .option-counter {
+    font-size: 0.85rem;
+  }
+
+  .option-counter .option-count {
+    min-width: 20px;
+    height: 20px;
+    font-size: 0.8rem;
   }
 }
