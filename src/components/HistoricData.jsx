@@ -1,11 +1,17 @@
 import React, { useState, useEffect } from "react";
 import { Table, Badge } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
+import SessionData from "../services/sessionData";
+
+const sessionData = new SessionData();
 
 const HistoricData = ({ insKey, name, close }) => {
   const [candles, setCandles] = useState([]);
   const [error, setError] = useState(null);
   const [todayPL, setTodayPL] = useState(0);
+  const selectedDate = sessionData.getData("selectedDate");
+
+  const todayDate = new Date();
 
   // Calculate startDate (1 month back) and endDate (today)
   const calculateDates = () => {

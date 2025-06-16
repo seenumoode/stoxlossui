@@ -244,6 +244,10 @@ h1 {
   background-color: #dc3545; /* Red for Put Options */
 }
 
+.engulfing .option-count {
+  background-color: #007bff; /* Blue for Engulfing */
+}
+
 @media (max-width: 576px) {
   .stock-card {
     min-width: 100%;

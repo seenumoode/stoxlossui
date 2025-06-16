@@ -1,14 +1,15 @@
 const BASE_URL = "13.239.10.161:8443";
+const BASE_URL_LOCAL = "localhost:3000";
+const URL = `https://${BASE_URL}/api/`;
+//const URL = `http://${BASE_URL_LOCAL}/api/`;
 export const getApiUrl = (endpoint) => {
-  return `https://${BASE_URL}/api/${endpoint}`;
+  return `${URL}${endpoint}`;
 };
-export const getWebSocketUrl = () => {
-  return `wss://${BASE_URL}`;
-};
+
 export const getAuthUrl = () => {
-  return `https://${BASE_URL}/api/auth`;
+  return `${URL}auth`;
 };
 
 export const getToken = () => {
-  return `https://${BASE_URL}/api/getAuth`;
+  return `${URL}getAuth`;
 };
