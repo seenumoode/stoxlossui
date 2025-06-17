@@ -70,7 +70,9 @@ function Stock() {
       "https://api.upstox.com/v2/historical-candle/intraday/" +
       key +
       "/1minute";
-    const datePayload = selectedDate.toLocaleDateString("en-CA");
+    const datePayload = selectedDate
+      ? selectedDate.toLocaleDateString("en-CA")
+      : "";
     const daily =
       "https://api.upstox.com/v2/historical-candle/" +
       key +
@@ -78,7 +80,10 @@ function Stock() {
       datePayload +
       "/" +
       datePayload;
-    if (todayDate.getDate() !== new Date(selectedDate).getDate()) {
+    if (
+      selectedDate &&
+      todayDate.getDate() !== new Date(selectedDate).getDate()
+    ) {
       const response = await fetch(daily);
       const resdata = await response.json();
       const candles = resdata.data.candles;
