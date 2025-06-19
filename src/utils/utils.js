@@ -6,6 +6,10 @@ export const getApiUrl = (endpoint) => {
   return `${URL}${endpoint}`;
 };
 
+export const getUpstoxUrl = (endpoint) => {
+  return `${URL}upstox/${endpoint}`;
+};
+
 export const getAuthUrl = () => {
   return `${URL}auth`;
 };

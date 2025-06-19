@@ -14,6 +14,7 @@ import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import SessionData from "../services/sessionData";
 import { DatePicker } from "antd";
 import dayjs from "dayjs";
+import { getUpstoxUrl } from "../utils/utils";
 
 const sessionData = new SessionData();
 // Register Chart.js components
@@ -33,59 +34,32 @@ const ProfitLoss = () => {
 
   // Fetch trade data
   useEffect(() => {
-    const url = "https://api.upstox.com/v2/trade/profit-loss/data";
-    const headers = {
-      Accept: "application/json",
-      Authorization: "Bearer " + sessionData.getData("accessToken"),
-    };
-    const params = new URLSearchParams({
-      from_date: "01-06-2025",
-      to_date: selectedDate
-        .toLocaleDateString("en-GB", {
-          day: "2-digit",
-          month: "2-digit",
-          year: "numeric",
-        })
-        .split("/")
-        .join("-"),
-      segment: "FO",
-      financial_year: "2526",
-      page_number: "1",
-      page_size: "15",
-    });
-
-    fetch(`${url}?${params}`, {
-      method: "GET",
-      headers: headers,
-    })
+    const formattedDate = selectedDate
+      .toLocaleDateString("en-GB", {
+        day: "2-digit",
+        month: "2-digit",
+        year: "numeric",
+      })
+      .split("/")
+      .join("-");
+    fetch(
+      getUpstoxUrl(`profitLoss?toDate=${encodeURIComponent(formattedDate)}`),
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
       .then((response) => {
+        if (!response.ok)
+          throw new Error(`HTTP error! status: ${response.status}`);
         return response.json();
       })
       .then((data) => {
-        if (data && data.data) {
-          // Map the data to the expected format
-          const formattedData = data.data.map((trade) => ({
-            quantity: trade.quantity,
-            isin: trade.isin,
-            scrip_name: trade.scrip_name,
-            trade_type: trade.trade_type,
-            buy_date: trade.buy_date,
-            buy_average: trade.buy_average,
-            sell_date: trade.sell_date,
-            sell_average: trade.sell_average,
-            buy_amount: trade.buy_amount,
-            sell_amount: trade.sell_amount,
-          }));
-          setTradeData(formattedData);
-        } else {
-          console.error("No data found in response");
-          setTradeData([]); // Ensure tradeData is empty if no data is found
-        }
+        setTradeData(data);
       })
-      .catch((error) => {
-        console.error("Error:", error.message || error);
-        setTradeData([]); // Set empty array on error
-      });
+      .catch((error) => console.error("Error:", error));
   }, [selectedDate]);
 
   // Calculate profit/loss and profit/loss percentage for each trade

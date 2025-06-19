@@ -6,84 +6,16 @@ import { DatePicker } from "antd";
 import dayjs from "dayjs";
 import { getApiUrl } from "../utils/utils";
 import SessionData from "../services/sessionData";
-// Adjust path if needed
+import {
+  calculateContinuousChanges,
+  findBearishEngulfing,
+  findBullishEngulfing,
+  filterCallOptions,
+  filterPutOptions,
+  validateStocks,
+} from "../utils/stockFilters";
 
 const sessionData = new SessionData();
-
-const calculateContinuousChanges = (data, type) => {
-  if (!data || !Array.isArray(data)) return 0;
-  let count = 0;
-  for (const entry of data) {
-    if (type === "positive" && entry.percentageChange > 0) {
-      count++;
-    } else if (type === "negative" && entry.percentageChange < 0) {
-      count++;
-    } else {
-      break;
-    }
-  }
-  return count;
-};
-
-// Filter function for Bearish Engulfing Pattern
-const findBearishEngulfing = (data) => {
-  return data.filter((stock) => {
-    const candles = inferOpenPrice(stock.data);
-    if (candles.length < 2) return false;
-
-    const currentCandle = candles[0];
-    const previousCandle = candles[1];
-    const twoCandlesAgo = candles[2] || null;
-
-    const isPreviousBullish = previousCandle.close > previousCandle.open;
-    const isCurrentBearish = currentCandle.close < currentCandle.open;
-    const isEngulfing =
-      currentCandle.open > previousCandle.close &&
-      currentCandle.close < previousCandle.open;
-    const isUptrend = twoCandlesAgo
-      ? twoCandlesAgo.close < previousCandle.close
-      : true;
-
-    return isPreviousBullish && isCurrentBearish && isEngulfing && isUptrend;
-  });
-};
-
-// utils/inferOpenPrice.js or in StockTabs.js before the component
-function inferOpenPrice(candles) {
-  return candles.map((candle, index, arr) => {
-    if (candle.open !== 0) {
-      return { ...candle };
-    }
-
-    let inferredOpen;
-
-    if (index === arr.length - 1) {
-      const nextCandle = arr[index - 1];
-      if (nextCandle) {
-        const prevClose =
-          nextCandle.close / (1 + nextCandle.percentageChange / 100);
-        inferredOpen = Math.min(candle.high, Math.max(candle.low, prevClose));
-      } else {
-        inferredOpen = candle.close;
-      }
-    } else {
-      const prevClose = candle.close / (1 + candle.percentageChange / 100);
-      if (candle.percentageChange > 0) {
-        inferredOpen = Math.min(
-          candle.close,
-          Math.max(candle.low, prevClose * 0.995)
-        );
-      } else {
-        inferredOpen = Math.min(
-          candle.high,
-          Math.max(candle.close, prevClose * 1.005)
-        );
-      }
-    }
-
-    return { ...candle, open: inferredOpen };
-  });
-}
 
 const StockTabs = () => {
   const [searchQuery, setSearchQuery] = useState("");
@@ -112,64 +44,6 @@ const StockTabs = () => {
   useEffect(() => {
     loadData();
   }, []);
-
-  const validateStocks = (stocks) => {
-    return stocks.filter(
-      (stock) =>
-        stock &&
-        typeof stock.name === "string" &&
-        stock.instrumentKey &&
-        typeof stock.percentageChange === "number" &&
-        typeof stock.high === "number" &&
-        typeof stock.low === "number"
-    );
-  };
-
-  const filterCallOptions = (stocks) => {
-    return stocks.filter((stock) => {
-      if (
-        stock.data &&
-        Array.isArray(stock.data) &&
-        stock.data.length >= 3 &&
-        typeof stock.high === "number" &&
-        typeof stock.data[2].close === "number"
-      ) {
-        const highGreaterThanClose = stock.high > stock.data[2].close;
-        const allNegativePercentageChange =
-          typeof stock.data[0].percentageChange === "number" &&
-          typeof stock.data[1].percentageChange === "number" &&
-          typeof stock.data[2].percentageChange === "number" &&
-          stock.data[0].percentageChange < 0 &&
-          stock.data[1].percentageChange < 0 &&
-          stock.data[2].percentageChange < 0;
-        return highGreaterThanClose && allNegativePercentageChange;
-      }
-      return false;
-    });
-  };
-
-  const filterPutOptions = (stocks) => {
-    return stocks.filter((obj) => {
-      const dataArray = obj.data;
-      if (!dataArray || !Array.isArray(dataArray) || dataArray.length < 3)
-        return false;
-
-      const first = dataArray[0].percentageChange;
-      const second = dataArray[1].percentageChange;
-      const third = dataArray[2].percentageChange;
-
-      return (
-        typeof first === "number" &&
-        typeof second === "number" &&
-        typeof third === "number" &&
-        first < 0 &&
-        second < 0 &&
-        third > 0 &&
-        first < second &&
-        Math.abs(third) > Math.abs(second)
-      );
-    });
-  };
 
   const onDateChange = (date, dateString) => {
     const data = { date };
@@ -246,8 +120,8 @@ const StockTabs = () => {
           : calculateContinuousChanges(a.data, "negative");
       const bCount =
         tab === "gainers"
-          ? calculateContinuousChanges(b.data, "positive")
-          : calculateContinuousChanges(b.data, "negative");
+          ? calculateContinuousChanges(a.data, "positive")
+          : calculateContinuousChanges(a.data, "negative");
       return bCount - aCount;
     });
   };
@@ -262,9 +136,13 @@ const StockTabs = () => {
     filterStocks(filterPutOptions(losers)),
     "putOptions"
   );
-  const filteredEngulfing = sortStocks(
+  const filteredBearishEngulfing = sortStocks(
     filterStocks(findBearishEngulfing(losers)),
-    "engulfing"
+    "bearishEngulfing"
+  );
+  const filteredBullishEngulfing = sortStocks(
+    filterStocks(findBullishEngulfing(gainers)),
+    "bullishEngulfing"
   );
 
   return (
@@ -310,10 +188,16 @@ const StockTabs = () => {
               {filterPutOptions(losers).length}
             </span>
           </div>
-          <div className="option-counter engulfing">
-            <span className="option-label">Engulfing</span>
+          <div className="option-counter bearish-engulfing">
+            <span className="option-label">Bearish Engulfing</span>
             <span className="option-count">
               {findBearishEngulfing(losers).length}
+            </span>
+          </div>
+          <div className="option-counter bullish-engulfing">
+            <span className="option-label">Bullish Engulfing</span>
+            <span className="option-count">
+              {findBullishEngulfing(gainers).length}
             </span>
           </div>
         </Col>
@@ -405,10 +289,10 @@ const StockTabs = () => {
             )}
           </Row>
         </Tab>
-        <Tab eventKey="engulfing" title="Engulfing">
+        <Tab eventKey="bearishEngulfing" title="Bearish Engulfing">
           <Row xs={1} md={2} lg={3} className="g-4">
-            {filteredEngulfing.length > 0 ? (
-              filteredEngulfing.map((stock) => (
+            {filteredBearishEngulfing.length > 0 ? (
+              filteredBearishEngulfing.map((stock) => (
                 <Col key={stock.instrumentKey}>
                   <StockCard stock={stock} />
                 </Col>
@@ -416,7 +300,24 @@ const StockTabs = () => {
             ) : (
               <Col>
                 <p className="text-muted text-center">
-                  No stocks match Engulfing criteria.
+                  No stocks match Bearish Engulfing criteria.
+                </p>
+              </Col>
+            )}
+          </Row>
+        </Tab>
+        <Tab eventKey="bullishEngulfing" title="Bullish Engulfing">
+          <Row xs={1} md={2} lg={3} className="g-4">
+            {filteredBullishEngulfing.length > 0 ? (
+              filteredBullishEngulfing.map((stock) => (
+                <Col key={stock.instrumentKey}>
+                  <StockCard stock={stock} />
+                </Col>
+              ))
+            ) : (
+              <Col>
+                <p className="text-muted text-center">
+                  No stocks match Bullish Engulfing criteria.
                 </p>
               </Col>
             )}

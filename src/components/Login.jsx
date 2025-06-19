@@ -79,7 +79,7 @@ const Login = () => {
       className="d-flex justify-content-center align-items-center"
       style={{ minHeight: "100vh" }}
     >
-      {!accessToken && (
+      {(!accessToken || accessToken === "Not Authenticated") && (
         <Card
           className="stock-card shadow-sm p-4"
           style={{ maxWidth: "400px", width: "100%" }}
@@ -106,7 +106,7 @@ const Login = () => {
           </Card.Body>
         </Card>
       )}
-      {accessToken && (
+      {accessToken === "Authenticated" && (
         <Card
           className="stock-card shadow-sm p-4"
           style={{ maxWidth: "400px", width: "100%" }}

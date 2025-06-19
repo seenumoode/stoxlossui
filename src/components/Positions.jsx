@@ -3,6 +3,7 @@ import { Card, Col, Row, Badge, Container, Alert } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import SessionData from "../services/sessionData";
 import "./css/Positions.css";
+import { getUpstoxUrl } from "../utils/utils";
 
 const sessionData = new SessionData();
 
@@ -96,33 +97,25 @@ const Positions = ({ position }) => {
 // Wrapper component to render multiple positions
 const PositionsList = () => {
   const [positions, setPositions] = useState([]);
+
   useEffect(() => {
-    const url = "https://api.upstox.com/v2/portfolio/short-term-positions";
-    const headers = {
-      Accept: "application/json",
-      Authorization: "Bearer " + sessionData.getData("accessToken"),
-    };
-    fetch(url, { headers })
+    fetch(getUpstoxUrl(`positions`), {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    })
       .then((response) => {
-        if (!response.ok) {
+        if (!response.ok)
           throw new Error(`HTTP error! status: ${response.status}`);
-        }
         return response.json();
       })
       .then((data) => {
-        console.log("Fetched positions:", data);
-        if (Array.isArray(data.data)) {
-          setPositions(data.data);
-        } else {
-          console.error("Unexpected data format:", data);
-          setPositions([]);
-        }
+        setPositions(data);
       })
-      .catch((error) => {
-        console.error("Error fetching positions:", error);
-        setPositions([]);
-      });
+      .catch((error) => console.error("Error:", error));
   }, []);
+
   return (
     <Container fluid className="my-5 dashboard-container">
       <h2 className="text-center mb-4 dashboard-title">Positions Dashboard</h2>

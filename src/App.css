@@ -244,8 +244,12 @@ h1 {
   background-color: #dc3545; /* Red for Put Options */
 }
 
-.engulfing .option-count {
-  background-color: #007bff; /* Blue for Engulfing */
+.bearish-engulfing .option-count {
+  background-color: #007bff; /* Blue for Bearish Engulfing */
+}
+
+.bullish-engulfing .option-count {
+  background-color: #20c997; /* Teal for Bullish Engulfing */
 }
 
 @media (max-width: 576px) {

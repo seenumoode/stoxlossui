@@ -11,6 +11,7 @@ import {
 } from "react-bootstrap";
 import "bootstrap/dist/css/bootstrap.min.css";
 import SessionData from "../services/sessionData";
+import { getUpstoxUrl } from "../utils/utils";
 
 const sessionData = new SessionData();
 
@@ -27,38 +28,26 @@ const OrderHistory = () => {
 
   // Fetch data from Upstox API
   useEffect(() => {
-    const url = "https://api.upstox.com/v2/charges/historical-trades";
-    const headers = {
-      Accept: "application/json",
-      Authorization: "Bearer " + sessionData.getData("accessToken"),
-    };
-    const params = new URLSearchParams({
-      segment: "FO",
-      start_date: "2025-06-01",
-      end_date: formattedDate,
-      page_number: "1",
-      page_size: "100",
-    });
-    fetch(`${url}?${params}`, {
-      method: "GET",
-      headers: headers,
-    })
+    fetch(
+      getUpstoxUrl(
+        `historicalTrades?endDate=${encodeURIComponent(formattedDate)}`
+      ),
+      {
+        method: "GET",
+        headers: {
+          "Content-Type": "application/json",
+        },
+      }
+    )
       .then((response) => {
-        if (!response.ok) {
+        if (!response.ok)
           throw new Error(`HTTP error! status: ${response.status}`);
-        }
         return response.json();
       })
       .then((data) => {
-        if (Array.isArray(data.data)) {
-          setOrders(data.data);
-        } else {
-          console.error("Unexpected data format:", data);
-        }
+        setOrders(data);
       })
-      .catch((error) => {
-        console.error("Error fetching Orders:", error);
-      });
+      .catch((error) => console.error("Error:", error));
   }, []);
 
   // Calculate Profit/Loss (only for SELL)
