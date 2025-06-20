@@ -13,6 +13,8 @@ import {
   filterCallOptions,
   filterPutOptions,
   validateStocks,
+  findThreeBlackCrows,
+  findDarkCloudCover,
 } from "../utils/stockFilters";
 
 const sessionData = new SessionData();
@@ -144,6 +146,14 @@ const StockTabs = () => {
     filterStocks(findBullishEngulfing(gainers)),
     "bullishEngulfing"
   );
+  const filteredThreeBlackCrows = sortStocks(
+    filterStocks(findThreeBlackCrows(losers)),
+    "threeCrows"
+  );
+  const filteredDarkCloudCover = sortStocks(
+    filterStocks(findDarkCloudCover(losers)),
+    "darkCloud"
+  );
 
   return (
     <div>
@@ -198,6 +208,18 @@ const StockTabs = () => {
             <span className="option-label">Bullish Engulfing</span>
             <span className="option-count">
               {findBullishEngulfing(gainers).length}
+            </span>
+          </div>
+          <div className="option-counter three-crows">
+            <span className="option-label">Three Crows</span>
+            <span className="option-count">
+              {findThreeBlackCrows(losers).length}
+            </span>
+          </div>
+          <div className="option-counter dark-cloud">
+            <span className="option-label">Dark Cloud</span>
+            <span className="option-count">
+              {findDarkCloudCover(losers).length}
             </span>
           </div>
         </Col>
@@ -318,6 +340,40 @@ const StockTabs = () => {
               <Col>
                 <p className="text-muted text-center">
                   No stocks match Bullish Engulfing criteria.
+                </p>
+              </Col>
+            )}
+          </Row>
+        </Tab>
+        <Tab eventKey="threeCrows" title="Three Crows">
+          <Row xs={1} md={2} lg={3} className="g-4">
+            {filteredThreeBlackCrows.length > 0 ? (
+              filteredThreeBlackCrows.map((stock) => (
+                <Col key={stock.instrumentKey}>
+                  <StockCard stock={stock} />
+                </Col>
+              ))
+            ) : (
+              <Col>
+                <p className="text-muted text-center">
+                  No stocks match Three Black Crows criteria.
+                </p>
+              </Col>
+            )}
+          </Row>
+        </Tab>
+        <Tab eventKey="darkCloud" title="Dark Cloud">
+          <Row xs={1} md={2} lg={3} className="g-4">
+            {filteredDarkCloudCover.length > 0 ? (
+              filteredDarkCloudCover.map((stock) => (
+                <Col key={stock.instrumentKey}>
+                  <StockCard stock={stock} />
+                </Col>
+              ))
+            ) : (
+              <Col>
+                <p className="text-muted text-center">
+                  No stocks match Dark Cloud Cover criteria.
                 </p>
               </Col>
             )}

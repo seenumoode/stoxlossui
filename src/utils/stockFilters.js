@@ -147,6 +147,84 @@ export const filterPutOptions = (stocks) => {
   });
 };
 
+// Filter for Three Black Crows pattern
+export const findThreeBlackCrows = (data) => {
+  return data.filter((stock) => {
+    const candles = inferOpenPrice(stock.data);
+    if (candles.length < 3) return false;
+
+    const thirdCandle = candles[0];
+    const secondCandle = candles[1];
+    const firstCandle = candles[2];
+    const priorCandle = candles[3] || null;
+
+    const isFirstBearish = firstCandle.close < firstCandle.open;
+    const isSecondBearish = secondCandle.close < secondCandle.open;
+    const isThirdBearish = thirdCandle.close < thirdCandle.open;
+
+    const isDescending =
+      thirdCandle.close < secondCandle.close &&
+      secondCandle.close < firstCandle.close;
+
+    const minBodySize = 0.5;
+    const isFirstSignificant =
+      Math.abs(firstCandle.close - firstCandle.open) >=
+      minBodySize * (firstCandle.high - firstCandle.low);
+    const isSecondSignificant =
+      Math.abs(secondCandle.close - secondCandle.open) >=
+      minBodySize * (secondCandle.high - secondCandle.low);
+    const isThirdSignificant =
+      Math.abs(thirdCandle.close - thirdCandle.open) >=
+      minBodySize * (thirdCandle.high - thirdCandle.low);
+
+    const isUptrend = priorCandle
+      ? priorCandle.close < firstCandle.close
+      : true;
+
+    return (
+      isFirstBearish &&
+      isSecondBearish &&
+      isThirdBearish &&
+      isDescending &&
+      isFirstSignificant &&
+      isSecondSignificant &&
+      isThirdSignificant &&
+      isUptrend
+    );
+  });
+};
+
+// Filter for Dark Cloud Cover pattern
+export const findDarkCloudCover = (data) => {
+  return data.filter((stock) => {
+    const candles = inferOpenPrice(stock.data);
+    if (candles.length < 2) return false;
+
+    const currentCandle = candles[0];
+    const previousCandle = candles[1];
+    const priorCandle = candles[2] || null;
+
+    const isPreviousBullish = previousCandle.close > previousCandle.open;
+    const isCurrentBearish = currentCandle.close < currentCandle.open;
+
+    const isAboveClose = currentCandle.open > previousCandle.close;
+    const isBelowMidpoint =
+      currentCandle.close < (previousCandle.open + previousCandle.close) / 2;
+
+    const isUptrend = priorCandle
+      ? priorCandle.close < previousCandle.close
+      : true;
+
+    return (
+      isPreviousBullish &&
+      isCurrentBearish &&
+      isAboveClose &&
+      isBelowMidpoint &&
+      isUptrend
+    );
+  });
+};
+
 // Validate stock data
 export const validateStocks = (stocks) => {
   return stocks.filter(

@@ -252,6 +252,14 @@ h1 {
   background-color: #20c997; /* Teal for Bullish Engulfing */
 }
 
+.three-crows .option-count {
+  background-color: #6f42c1; /* Purple for Three Black Crows */
+}
+
+.dark-cloud .option-count {
+  background-color: #fd7e14; /* Orange for Dark Cloud Cover */
+}
+
 @media (max-width: 576px) {
   .stock-card {
     min-width: 100%;
