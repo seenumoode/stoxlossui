@@ -12,6 +12,7 @@ import SessionData from "./services/sessionData";
 import { useEffect } from "react";
 import { getToken } from "./utils/utils";
 import Dashboard from "./components/Dashboard";
+import OrderHistoryTabs from "./components/OrderHistoryComponentTabs";
 
 const sessionData = new SessionData();
 
@@ -117,7 +118,7 @@ function App() {
           <Route path="/stock/:key/:name" element={<Stock />} />
           <Route path="/pl" element={<ProfitLoss />} />
           <Route path="/positions" element={<PositionsList />} />
-          <Route path="/orderHistory" element={<OrderHistory />} />
+          <Route path="/orderHistory" element={<OrderHistoryTabs />} />
         </Routes>
       </Container>
     </>

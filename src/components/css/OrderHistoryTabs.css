@@ -1,0 +1,153 @@
+.order-history-container {
+  background-color: #f8f9fa;
+  padding: 20px;
+  color: #333;
+}
+
+.order-history-container h1 {
+  font-size: 2.5rem;
+  font-weight: 700;
+  background: linear-gradient(90deg, #007bff, #ff6b6b);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.summary-card {
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.2s, box-shadow 0.2s;
+  background-color: #fff;
+}
+
+.summary-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 16px rgba(0, 0, 0, 0.15);
+}
+
+.custom-tabs .nav-link {
+  background-color: #e9ecef;
+  color: #333;
+  border: none;
+  margin-right: 5px;
+  border-radius: 5px 5px 0 0;
+  transition: background-color 0.3s, color 0.3s, box-shadow 0.3s;
+  position: relative;
+}
+
+.custom-tabs .nav-link:hover {
+  background-color: #dee2e6;
+  color: #007bff;
+}
+
+.custom-tabs .nav-link.active {
+  background-color: #fff;
+  color: #007bff;
+  box-shadow: 0 -2px 0 #007bff inset;
+  font-weight: 600;
+}
+
+.table {
+  background-color: #fff;
+  border-radius: 8px;
+  overflow: hidden;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.table th,
+.table td {
+  border-color: #e0e0e0;
+}
+
+.table th:hover {
+  background-color: #f1f3f5;
+  cursor: pointer;
+}
+
+.table tr:hover {
+  background-color: #f1f3f5;
+}
+
+.selected-order-card {
+  background-color: #fff;
+  border: 1px solid #007bff;
+  box-shadow: 0 4px 12px rgba(0, 123, 255, 0.2);
+  border-radius: 10px;
+  transition: all 0.3s ease;
+  animation: slideIn 0.3s ease;
+}
+
+.selected-order-card .card-title {
+  color: #007bff;
+  font-weight: 600;
+}
+
+.selected-order-card p {
+  margin: 0.5rem 0;
+  color: #333;
+}
+
+.selected-order-card strong {
+  color: #555;
+}
+
+.pagination-controls {
+  font-size: 0.9rem;
+  color: #333;
+}
+
+.pagination-controls .pagination .page-item .page-link {
+  border-color: #e0e0e0;
+  color: #333;
+  transition: background-color 0.2s, color 0.2s;
+}
+
+.pagination-controls .pagination .page-item.active .page-link {
+  background-color: #007bff;
+  border-color: #007bff;
+  color: #fff;
+}
+
+.pagination-controls .pagination .page-item .page-link:hover {
+  background-color: #f1f3f5;
+  color: #007bff;
+}
+
+.pagination-controls .form-select {
+  border-color: #e0e0e0;
+  color: #333;
+}
+
+@keyframes slideIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@media (max-width: 768px) {
+  .order-history-container h1 {
+    font-size: 2rem;
+  }
+
+  .summary-card {
+    margin-bottom: 15px;
+  }
+
+  .selected-order-card {
+    font-size: 0.9rem;
+  }
+
+  .pagination-controls {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 10px;
+  }
+
+  .pagination-controls .pagination {
+    margin-top: 10px;
+  }
+}
